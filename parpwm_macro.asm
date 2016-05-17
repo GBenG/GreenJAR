@@ -5,7 +5,7 @@
 			RJMP	dec_pwm
 inc_pwm:
 			CPI	@2,254
-			BREQ chestat
+			BREQ chedir
 			INC	@2
 			RJMP lpwmout
 
@@ -13,19 +13,40 @@ dec_pwm:
 			CPI	@2,0
 			BREQ lpwmout
 			DEC	@2
+
+			CPI	@2,0
+			BRNE lpwmout
+
+			CBR @4,1<<@5	; Проверяем не закончился ли цикл
+//---------------------------------------
+		//	LDI	R17,2
+			MOV	R17,RANDOM
+			ANDI	R17,0b00000111
+
+			STS	@3,RANDOM
+			STS	@3+1,R17
+//---------------------------------------
 			RJMP lpwmout
 
-chestat:
+chedir:
 
-			CBR 	@0,1<<@1	
+			CBR 	@0,1<<@1
+			RJMP	lpwmout
+
+
+
 
 lpwmout:
 
 .ENDM
 
-// @0 - STATUS
-// @1 - Bit in STATUS
-// @3 - 
+// @0 - DIR
+// @1 - Bit in DIR
+// @2 - PWMx
+// @3 - WAIT Cell
+// @4 - STATUS
+// @5 - Bit in STATUS
+
 
 //========================================
 

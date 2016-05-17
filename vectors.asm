@@ -15,7 +15,7 @@
 			.ORG	PCI0addr	; External Interrupt Request 0
 			RETI
 			.ORG	OVF0addr	; Timer/Counter0 Overflow
-			RETI//RJMP	TOF_OK
+			RJMP	TOF_OK
 			.ORG	ERDYaddr	; EEPROM Ready
 			RETI
 			.ORG	ACIaddr		; Analog Comparator

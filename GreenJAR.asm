@@ -18,6 +18,7 @@
 	.def 	PWM2 	= R25		;
 	.def 	PWM3 	= R26		;
 	.def 	PWM4 	= R27		;
+	.def 	RANDOM 	= R28		; 
 
 WAIT0:     .byte 2
 WAIT1:     .byte 2
@@ -36,17 +37,19 @@ WAIT4:     .byte 2
 //////////////////////////////////////////////////////////////////////////////
 ////////////                     œ–≈–€¬¿Õ»ﬂ                      /////////////
 //////////////////////////////////////////////////////////////////////////////
-/*				
+				
 TOF_OK:	
 		
 		PUSH	R16
 		PUSH	R17
 
+		ROR		RANDOM
+
 		POP	R17
 		POP	R16
 
 RETI
-*/
+
 //////////////////////////////////////////////////////////////////////////////
 ////////////                   PROGRAMM INIT                     /////////////
 //////////////////////////////////////////////////////////////////////////////			
@@ -60,12 +63,19 @@ Reset:		ldi r16, low(RAMEND)
 	//		DDLOOP 10,255,255
 
 			CLR	COUNT
+			CLR	DIR
 			CLR	STATUS
+			LDI RANDOM,5
+
 			LDI	R16,255
 			STS	WAIT0,R16
+			LDI	R16,120
 			STS	WAIT1,R16
+			LDI	R16,200
 			STS	WAIT2,R16
+			LDI	R16,24
 			STS	WAIT3,R16
+			LDI	R16,250
 			STS	WAIT4,R16
 
 			LDI	R16,1
@@ -76,10 +86,9 @@ Reset:		ldi r16, low(RAMEND)
 			STS	WAIT2+1,R16
 			LDI	R16,4
 			STS	WAIT3+1,R16
-			LDI	R16,3
+			LDI	R16,5
 			STS	WAIT4+1,R16
 
-//			SBR DIR,1<<1
 //////////////////////////////////////////////////////////////////////////////
 ////////////             		÷» À Œ∆»ƒ¿Õ»ﬂ     	             /////////////
 //////////////////////////////////////////////////////////////////////////////
@@ -91,20 +100,23 @@ LOOP:
 			LEDPWM	COUNT,PWM3,PORTB,3
 			LEDPWM	COUNT,PWM4,PORTB,4
 
-		//	DDLOOP 10,2,2
+
+		//	DDLOOP 1,2,2
 
 			INC	COUNT;
 			CPI	COUNT,255
-			BRNE	outloop
+			BRNE	p_outloop
+			RJMP	pwm_cha
+p_outloop:	RJMP	outloop
 
-			PWM_CHANGE DIR,0,PWM0
-			PWM_CHANGE DIR,1,PWM1
-			PWM_CHANGE DIR,2,PWM2
-			PWM_CHANGE DIR,3,PWM3
-			PWM_CHANGE DIR,4,PWM4
+pwm_cha:
+			PWM_CHANGE DIR,0,PWM0,WAIT0,STATUS,0
+			PWM_CHANGE DIR,1,PWM1,WAIT1,STATUS,1
+			PWM_CHANGE DIR,2,PWM2,WAIT2,STATUS,2
+			PWM_CHANGE DIR,3,PWM3,WAIT3,STATUS,3
+			PWM_CHANGE DIR,4,PWM4,WAIT4,STATUS,4
 			
 			RJMP	waitc
-
 
 outloop:
 
@@ -119,15 +131,6 @@ waitc:
 			WAITLOOP STATUS,4,WAIT4,DIR,4
 
 //--------------------------------------------------
-/*
-			SBRC	DIR,0
-			RJMP	outst
-
-			CPI		PWM0,1
-			BRLO	outst
-			SBR		STATUS,1<<0
-outst:
-*/
 RJMP	LOOP
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
