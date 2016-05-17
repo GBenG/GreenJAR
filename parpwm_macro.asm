@@ -31,26 +31,67 @@ lpwmout:
 
 .MACRO LEDPWM
 
-			CP		@1,@2
+			CP		@0,@1
 			BRSH	low_side
 			RJMP	high_side
 
 low_side:	
 			
 			
-			CLRB	@3,@4,R16	; [0]
+			CLRB	@2,@3,R16	; [0]
 			RJMP	end_side
 
 high_side:
 
-			SETB	@3,@4,R16	; [1]
+			SETB	@2,@3,R16	; [1]
 			RJMP	end_side
 
 end_side:
 
 .ENDM
+// @0 - COUNT
+// @1 - PWM Register
+// @2 - PORTx
+// @3 - Pin in PORTx
+
+//========================================
+
+.MACRO WAITLOOP
+
+			SBRC	@0,@1
+			RJMP	go_next
+
+			LDS		R16,@2
+			LDS		R17,@2+1
+
+			CPI		R16,0
+			BREQ	test_pl
+			DEC		R16
+			STS		@2,R16
+			RJMP	go_next
+
+test_pl:	CPI		R17,0
+			BREQ	st_ch
+			DEC		R17
+			LDI		R16,255
+			STS		@2,R16
+			STS		@2+1,R17
+			RJMP	go_next
+
+st_ch:		
+			SBR 	@0,1<<@1
+			SBR 	@3,1<<@4
+
+go_next:
+
+
+
+.ENDM
+
 // @0 - STATUS
-// @1 - COUNT
-// @2 - PWM Register
-// @3 - PORTx
-// @4 - Pin in PORTx
+// @1 - Bit in STATUS
+// @2 - WAIT Cell
+// @3 - DIR
+// @4 - Bit in DIR
+
+//========================================
